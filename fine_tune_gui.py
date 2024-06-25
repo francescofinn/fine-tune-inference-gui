@@ -1,4 +1,3 @@
-import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
@@ -125,5 +124,6 @@ class FineTuneApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
+    root.geometry("600x600")
     app = FineTuneApp(root)
     root.mainloop()
