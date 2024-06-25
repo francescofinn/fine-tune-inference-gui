@@ -5,6 +5,7 @@ from datasets import Dataset
 
 class FineTuneApp:
     def __init__(self, root):
+        # Initialise labels, buttons & text inputs
         self.root = root
         self.root.title("Fine-Tune LLM")
 
@@ -33,7 +34,7 @@ class FineTuneApp:
         self.output_text.pack(pady=10)
 
         self.data_path = ""
-        self.model_path = './fine_tuned_model'
+        self.model_path = './fine_tuned_model' # Once model is fine-tuned, it's saved to working directory
 
         self.tokenizer = None
         self.model = None
@@ -50,23 +51,26 @@ class FineTuneApp:
         self.status_label.config(text="Fine-tuning in progress...")
 
         try:
+            # Load dataset from text file
             with open(self.data_path, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
-                dataset = Dataset.from_dict({'text': lines})
+                dataset = Dataset.from_dict({'text': lines}) # Initialise Dataset object
 
+            # Verify number of dataset samples
             if len(dataset) == 0:
                 raise ValueError("The dataset is empty.")
             
+            # Split into train and test sets
             dataset = dataset.train_test_split(test_size=0.1)
             train_dataset = dataset['train']
             eval_dataset = dataset['test']
 
             tokenizer = AutoTokenizer.from_pretrained('openai-community/gpt2')
-            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token = tokenizer.eos_token # Set pad_token to eos_token (end of sequence)
             
             def tokenize_function(examples):
                 outputs = tokenizer(examples['text'], padding="max_length", truncation=True)
-                outputs['labels'] = outputs['input_ids'].copy()
+                outputs['labels'] = outputs['input_ids'].copy() # Use input_ids as labels
                 return outputs
             
             tokenized_datasets = train_dataset.map(tokenize_function, batched=True)
@@ -92,8 +96,8 @@ class FineTuneApp:
             )
 
             trainer.train()
-            trainer.save_model(self.model_path)
-            tokenizer.save_pretrained(self.model_path)
+            trainer.save_model(self.model_path) # Save fine-tuned model
+            tokenizer.save_pretrained(self.model_path) # Save tokenizer
             self.status_label.config(text="Model fine-tuning complete.")
         
         except Exception as e:
