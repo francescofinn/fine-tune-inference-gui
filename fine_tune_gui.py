@@ -3,6 +3,8 @@ from tkinter import filedialog, messagebox
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
 from datasets import Dataset
 
+MODEL = "openai-community/gpt2" # Modify based on desired model (local or from HuggingFace)
+
 class FineTuneApp:
     def __init__(self, root):
         # Initialise labels, buttons & text inputs
@@ -65,7 +67,7 @@ class FineTuneApp:
             train_dataset = dataset['train']
             eval_dataset = dataset['test']
 
-            tokenizer = AutoTokenizer.from_pretrained('openai-community/gpt2')
+            tokenizer = AutoTokenizer.from_pretrained(MODEL)
             tokenizer.pad_token = tokenizer.eos_token # Set pad_token to eos_token (end of sequence)
             
             def tokenize_function(examples):
@@ -76,7 +78,7 @@ class FineTuneApp:
             tokenized_datasets = train_dataset.map(tokenize_function, batched=True)
             tokenized_eval_dataset = eval_dataset.map(tokenize_function, batched=True)
 
-            model = AutoModelForCausalLM.from_pretrained('openai-community/gpt2')
+            self.model = AutoModelForCausalLM.from_pretrained(MODEL)
             
             training_args = TrainingArguments(
                 output_dir='./results',
@@ -89,7 +91,7 @@ class FineTuneApp:
             )
 
             trainer = Trainer(
-                model=model,
+                model=self.model,
                 args=training_args,
                 train_dataset=tokenized_datasets,
                 eval_dataset=tokenized_eval_dataset
